@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0c10">
+<title>手机 Python</title>
+<style>
+:root{
+  --bg:#0a0c10;--line:#1a2029;--line2:#262d38;
+  --panel:#0e141d;--card:#12161d;--btn:#161b22;
+  --btnA:#262c36;--hd:#0e141d;
+  --text:#e9eff7;--dim:#8b98a8;--dim2:#6b7684;
+  --acc:#3fb950;--accbg:#238636;--blue:#58a6ff;--warn:#d29922;--bad:#f85149;
+  --tk-c:#8b98a8;--tk-s:#a5d6ff;--tk-k:#ff7b72;--tk-n:#79c0ff;--tk-b:#d2a8ff;
+  --sel:rgba(88,166,255,.28);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ui:"PingFang SC","HarmonyOS Sans SC","Source Han Sans SC","Noto Sans CJK SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+}
+body.light{
+  --bg:#ffffff;--line:#d8dee4;--line2:#d0d7de;
+  --panel:#f6f8fa;--card:#f6f8fa;--btn:#eaeef2;
+  --btnA:#dfe3e8;--hd:#ffffff;
+  --text:#1f2328;--dim:#5a6472;--dim2:#7a8494;
+  --acc:#1a7f37;--accbg:#1f883d;--blue:#0969da;--warn:#9a6700;--bad:#cf222e;
+  --tk-c:#6e7781;--tk-s:#0a3069;--tk-k:#cf222e;--tk-n:#0550ae;--tk-b:#8250df;
+  --sel:rgba(9,105,218,.22);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg);color:var(--text);font:15.5px/1.68 var(--ui);height:100vh;height:100dvh;overflow:hidden;transition:background .2s,color .2s;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#app{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.pg{display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden}
+.pg.on{display:flex}
+
+.bar{display:flex;align-items:center;gap:6px;flex:0 0 auto;padding:calc(9px + env(safe-area-inset-top)) 12px 9px;border-bottom:1px solid var(--line)}
+.bar h1{font-size:15px;margin:0;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar button{background:var(--btn);border:0;color:var(--text);border-radius:9px;font-family:inherit;font-size:13.5px;padding:8px 11px;cursor:pointer;flex:0 0 auto}
+.bar button:active{background:var(--btnA)}
+#st{font:11px/1 var(--mono);color:var(--dim);margin-right:2px}
+#st.ok{color:var(--acc)}#st.bad{color:var(--bad)}
+
+.hpad{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(40px + env(safe-area-inset-bottom))}
+.hero{text-align:center;padding:14px 8px 26px}
+.hero .orb{width:68px;height:68px;margin:0 auto 16px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:34px;background:linear-gradient(150deg,rgba(63,185,80,.16),rgba(88,166,255,.08));border:1px solid rgba(63,185,80,.28)}
+.hero h1{font-size:25px;margin:0 0 8px;font-weight:700}
+.hero p{color:var(--dim);font-size:13.5px;margin:0}
+.hsec{font-size:12.5px;color:var(--dim);font-weight:700;letter-spacing:.05em;margin:22px 0 11px;display:flex;align-items:center;gap:8px}
+.hsec::after{content:'';flex:1;height:1px;background:var(--line)}
+.kinds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kind{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;cursor:pointer;transition:.18s}
+.kind:active{transform:scale(.975);background:var(--panel)}
+.kind .ki{font-size:23px;line-height:1}
+.kind .kn{font-size:15px;font-weight:650;margin-top:9px}
+.kind .kd{font-size:12px;color:var(--dim);margin-top:3px;line-height:1.5}
+.wlist{display:flex;flex-direction:column;gap:9px}
+.witem{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;cursor:pointer}
+.witem:active{background:var(--panel)}
+.witem .wi{font-size:18px;flex:0 0 auto}
+.witem .wt{flex:1;min-width:0}
+.witem .wn{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.witem .wd{font-size:11.5px;color:var(--dim);font-family:var(--mono);margin-top:2px}
+.witem .wa{color:var(--dim2);font-size:16px}
+.empty{text-align:center;color:var(--dim);font-size:13.5px;padding:26px 10px;border:1px dashed var(--line);border-radius:14px}
+
+.edwrap{position:relative;flex:1 1 40%;min-height:0;overflow:hidden;background:var(--bg)}
+.hlbox{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#hl{
+  margin:0;padding:12px 13px;border:0;
+  font:14px/1.62 var(--mono);
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+  color:var(--text);will-change:transform;
+}
+#code{
+  position:absolute;inset:0;width:100%;height:100%;
+  background:transparent;border:0;outline:none;resize:none;
+  padding:12px 13px;
+  font:14px/1.62 var(--mono);
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+  color:transparent;-webkit-text-fill-color:transparent;
+  caret-color:var(--text);
+  overflow:auto;-webkit-overflow-scrolling:touch;
+}
+#code::selection{background:var(--sel)}
+#code::-webkit-selection{background:var(--sel)}
+#code::-moz-selection{background:var(--sel)}
+.tk-c{color:var(--tk-c);font-style:italic}
+.tk-s{color:var(--tk-s)}
+.tk-k{color:var(--tk-k);font-weight:600}
+.tk-n{color:var(--tk-n)}
+.tk-b{color:var(--tk-b)}
+
+.keys{display:flex;gap:5px;overflow-x:auto;padding:6px 10px;flex:0 0 auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
+.keys button{flex:0 0 auto;background:var(--card);border:1px solid var(--line2);color:var(--dim);border-radius:7px;font:12.5px/1 var(--mono);padding:8px 10px;cursor:pointer}
+.tools{display:flex;gap:6px;padding:7px 10px;flex:0 0 auto;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tools button{font-family:inherit;cursor:pointer;border:0;border-radius:9px;font-weight:600;flex:0 0 auto}
+#run{flex:1 1 auto;min-width:92px;padding:11px;background:var(--accbg);color:#fff;font-size:14.5px}
+#run:disabled{opacity:.45}
+.tools .gray{background:var(--btn);color:var(--text);padding:11px 13px;font-size:13.5px}
+.tabs{display:flex;flex:0 0 auto;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;background:none;border:0;color:var(--dim);font-family:inherit;font-size:13.5px;padding:10px;border-bottom:2px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--text);border-bottom-color:var(--acc)}
+#panes{flex:1 1 58%;position:relative;overflow:hidden;min-height:0}
+.pane{position:absolute;inset:0;overflow:auto;opacity:0;pointer-events:none;z-index:1;transition:opacity .15s}
+.pane.on{opacity:1;pointer-events:auto;z-index:2}
+#out{margin:0;padding:12px;font:12.5px/1.6 var(--mono);white-space:pre-wrap;word-break:break-word;color:var(--text)}
+#out img{border-radius:9px}
+.err{color:var(--bad)}.warn{color:var(--warn)}.info{color:var(--blue)}.okc{color:var(--acc)}
+.gotoline{display:inline-block;background:var(--btn);border:1px solid var(--line2);color:var(--blue);font:12.5px/1 var(--mono);padding:9px 13px;border-radius:9px;margin:4px 0 10px;cursor:pointer}
+.gotoline:active{background:var(--btnA)}
+#paneTurtle{overflow:hidden;background:#fff}
+#tbox{position:relative;width:100%;height:100%}
+#cvP,#cvT{position:absolute;inset:0;width:100%;height:100%}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:var(--bg);color:var(--dim);font-size:13.5px;z-index:9;text-align:center}
+#loading.hide{display:none}
+.spin{width:26px;height:26px;border:2.5px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;display:none}
+.mask.on{display:block}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--hd);border-top:1px solid var(--line2);border-radius:20px 20px 0 0;padding:18px 15px calc(22px + env(safe-area-inset-bottom));max-height:84dvh;overflow-y:auto;animation:up .25s cubic-bezier(.2,.9,.25,1)}
+@keyframes up{from{transform:translateY(26px);opacity:.4}to{transform:translateY(0);opacity:1}}
+.sheet h3{margin:0 0 14px;font-size:16px}
+.sheet .row{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:7px;cursor:pointer}
+.sheet .row.cur{border-color:var(--acc)}
+.sheet .row .t{flex:1;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet .row .x{color:var(--bad);font-size:16px;padding:0 4px}
+.sheet .act{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:11px;padding:13px 14px;margin-bottom:8px;font-family:inherit;font-size:14.5px;cursor:pointer}
+.sheet .act:active{background:var(--panel)}
+.sheet .cls{width:100%;background:var(--btn);color:var(--text);border:0;border-radius:11px;padding:13px;font-family:inherit;font-size:14.5px;margin-top:6px}
+.sheet input{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:10px;color:var(--text);font:12.5px var(--mono);padding:10px 12px;outline:none;margin-bottom:10px}
+.sheet input:focus{border-color:var(--acc)}
+.mini{font-size:12.5px;color:var(--dim);line-height:1.65;margin:8px 0 12px}
+.pkgs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pkg{font:12px var(--mono);padding:6px 11px;border-radius:8px;background:var(--card);border:1px solid var(--line2);color:var(--dim)}
+.pkg.on{background:rgba(63,185,80,.14);border-color:var(--acc);color:var(--acc)}
+.sgrp{font-size:12px;color:var(--dim);font-weight:700;letter-spacing:.06em;margin:16px 0 8px}
+.sgrp:first-child{margin-top:0}
+.sni{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:7px;cursor:pointer;font-size:14.5px;display:flex;align-items:center;gap:9px}
+.sni:active{background:var(--panel)}
+.sni .sn{flex:1}
+.sni .sc{font-size:11.5px;color:var(--dim);font-family:var(--mono)}
+
+#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,12px);z-index:99;background:var(--hd);border:1px solid var(--line2);color:var(--text);font-size:14.5px;padding:12px 19px;border-radius:13px;max-width:84vw;text-align:center;opacity:0;pointer-events:none;transition:.24s;box-shadow:0 14px 40px -14px rgba(0,0,0,.5)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.err{border-color:var(--bad);color:var(--bad)}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <section class="pg on" id="v-home">
+    <div class="bar">
+      <h1 style="text-align:center">🐍 手机 Python</h1>
+      <span id="st">加载中</span>
+      <button class="btheme">☀️</button>
+    </div>
+    <div class="hpad">
+      <div class="hero">
+        <div class="orb">🐍</div>
+        <h1>手机上跑 Python</h1>
+        <p>选一个开始，代码已经帮你起好头</p>
+      </div>
+
+      <div class="hsec">新建</div>
+      <div class="kinds" id="kinds"></div>
+
+      <div class="hsec">我的题目</div>
+      <div id="wlist"></div>
+    </div>
+  </section>
+
+  <section class="pg" id="v-edit">
+    <div class="bar">
+      <button id="bBack">←</button>
+      <h1 id="eTitle" style="text-align:center">题目</h1>
+      <button class="btheme">☀️</button>
+      <button id="bWk">📚</button>
+    </div>
+
+    <div class="edwrap">
+      <div class="hlbox"><pre id="hl"></pre></div>
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+    </div>
+
+    <div class="keys" id="keys"></div>
+    <div class="tools">
+      <button id="run">▶ 运行</button>
+      <button class="gray" id="bSnip">📎</button>
+      <button class="gray" id="bLib">📦</button>
+      <button class="gray" id="bEx">导出</button>
+      <button class="gray" id="bClear">✕</button>
+    </div>
+    <div class="tabs">
+      <button class="on" data-p="out">📋 输出</button>
+      <button data-p="turtle">🐢 画布</button>
+    </div>
+    <div id="panes">
+      <div class="pane on" id="paneOut"><pre id="out"></pre></div>
+      <div class="pane" id="paneTurtle">
+        <div id="tbox"><canvas id="cvP"></canvas><canvas id="cvT"></canvas></div>
+      </div>
+      <div id="loading">
+        <div class="spin"></div><div>正在加载 Python 引擎…</div>
+        <div style="font-size:12px;opacity:.7">首次约 10MB，十几秒；之后走缓存</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast"></div>
+
+<div class="mask" id="mask1"><div class="sheet" id="shWk"></div></div>
+<div class="mask" id="mask2"><div class="sheet" id="shEx"></div></div>
+<div class="mask" id="mask3"><div class="sheet" id="shLib"></div></div>
+<div class="mask" id="mask4"><div class="sheet" id="shSnip"></div></div>
+
+<input type="file" id="fileIp" accept=".ipynb,application/json" style="display:none">
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+<script>
+/* =====================================================================
+   一、海龟引擎
+   ===================================================================== */
+window._tg = (function(){
+  var W=0,H=0, ops=[], x=0,y=0,a=0, dn=true;
+  var pc='#111111', fc='#111111', pw=2, fill=null, vis=true;
+  var cvP,cvT,cP,cT, K=1, CX=0, CY=0, dirty=false, bgImg=null;
+
+  function SX(v){ return W/2 + (v-CX)*K; }
+  function SY(v){ return H/2 - (v-CY)*K; }
+
+  function mark(){
+    if (dirty) return;
+    dirty = true;
+    requestAnimationFrame(function(){ dirty=false; paint(); });
+  }
+
+  function line(x1,y1,x2,y2){
+    if (!dn) return;
+    ops.push({t:'l',x1:x1,y1:y1,x2:x2,y2:y2,c:pc,w:pw});
+  }
+  function fd(d){
+    var r=a*Math.PI/180, nx=x+d*Math.cos(r), ny=y+d*Math.sin(r);
+    line(x,y,nx,ny); x=nx; y=ny;
+    if (fill) fill.push([nx,ny]);
+    mark();
+  }
+  function jump(nx,ny){
+    line(x,y,nx,ny); x=nx; y=ny;
+    if (fill) fill.push([nx,ny]);
+    mark();
+  }
+  function circ(r,ext,steps){
+    if (ext===undefined||ext===null) ext=360;
+    var n=(steps&&steps>0)?steps:Math.max(20,Math.ceil(Math.abs(ext)));
+    var per=Math.abs(ext)/n, ch=2*Math.abs(r)*Math.sin(per*Math.PI/360);
+    var left=((r>0)===(ext>0));
+    for (var i=0;i<n;i++){
+      a += left?per:-per;
+      var rad=a*Math.PI/180, nx=x+ch*Math.cos(rad), ny=y+ch*Math.sin(rad);
+      line(x,y,nx,ny); x=nx; y=ny;
+      if (fill) fill.push([nx,ny]);
+    }
+    mark();
+  }
+  function bbox(){
+    if (!ops.length) return null;
+    var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9, has=false;
+    function acc(px,py){
+      has=true;
+      if(px<x0)x0=px; if(px>x1)x1=px;
+      if(py<y0)y0=py; if(py>y1)y1=py;
+    }
+    for (var i=0;i<ops.length;i++){
+      var o=ops[i];
+      if (o.t==='l'){ acc(o.x1,o.y1); acc(o.x2,o.y2); }
+      else if (o.t==='f'){ for (var j=0;j<o.p.length;j++) acc(o.p[j][0],o.p[j][1]); }
+      else if (o.t==='p'){ acc(o.x-o.r/2,o.y-o.r/2); acc(o.x+o.r/2,o.y+o.r/2); }
+      else if (o.t==='t'){ acc(o.x,o.y); acc(o.x+o.s.length*9,o.y+14); }
+    }
+    return has ? {x0:x0,y0:y0,x1:x1,y1:y1} : null;
+  }
+  function grid(){
+    var st = 40*K;
+    while (st < 26) st *= 2;
+    cP.strokeStyle = 'rgba(15,35,60,.055)';
+    cP.lineWidth = 1;
+    cP.beginPath();
+    var o = SX(0), i;
+    var s0 = o - Math.floor(o/st)*st;
+    for (i=s0;i<W;i+=st){ cP.moveTo(i,0); cP.lineTo(i,H); }
+    o = SY(0);
+    s0 = o - Math.floor(o/st)*st;
+    for (i=s0;i<H;i+=st){ cP.moveTo(0,i); cP.lineTo(W,i); }
+    cP.stroke();
+  }
+  function arrow(){
+    if (!cT) return;
+    var dpr = window.devicePixelRatio || 1;
+    cT.setTransform(1,0,0,1,0,0);
+    cT.clearRect(0,0,cT.canvas.width,cT.canvas.height);
+    cT.setTransform(dpr,0,0,dpr,0,0);
+    if (!vis) return;
+    cT.save();
+    cT.translate(SX(x),SY(y));
+    cT.rotate(-a*Math.PI/180);
+    cT.fillStyle='#2ea043';
+    cT.shadowColor='rgba(46,160,67,.35)';
+    cT.shadowBlur=6;
+    cT.beginPath();
+    cT.moveTo(12,0); cT.lineTo(-8,-7); cT.lineTo(-8,-2.6);
+    cT.lineTo(-11,-2.6); cT.lineTo(-11,2.6); cT.lineTo(-8,2.6);
+    cT.lineTo(-8,7); cT.closePath(); cT.fill();
+    cT.restore();
+  }
+  function paint(){
+    if (!cP) return;
+    cP.setTransform(1,0,0,1,0,0);
+    var dpr = window.devicePixelRatio || 1;
+    cP.setTransform(dpr,0,0,dpr,0,0);
+    cP.fillStyle = '#fdfdfb';
+    cP.fillRect(0,0,W,H);
+
+    if (bgImg && !ops.length){
+      var sc = Math.min((W-24)/bgImg.width, (H-24)/bgImg.height);
+      var iw = bgImg.width*sc, ih = bgImg.height*sc;
+      cP.drawImage(bgImg, (W-iw)/2, (H-ih)/2, iw, ih);
+      if (cT){
+        cT.setTransform(1,0,0,1,0,0);
+        cT.clearRect(0,0,cT.canvas.width,cT.canvas.height);
+      }
+      return;
+    }
+
+    var bb = bbox();
+    K = 1; CX = 0; CY = 0;
+    if (bb){
+      var w = Math.max(bb.x1-bb.x0, 1), h = Math.max(bb.y1-bb.y0, 1);
+      K = Math.min((W-46)/w, (H-46)/h);
+      if (!isFinite(K) || K<=0) K = 1;
+      K = Math.min(K, 6);
+      CX = (bb.x0+bb.x1)/2;
+      CY = (bb.y0+bb.y1)/2;
+    }
+    grid();
+
+    for (var i=0;i<ops.length;i++){
+      var o = ops[i];
+      if (o.t==='l'){
+        cP.strokeStyle=o.c;
+        cP.lineWidth=Math.max(1.1, Math.min(o.w*K, 14));
+        cP.lineCap='round'; cP.lineJoin='round';
+        cP.beginPath();
+        cP.moveTo(SX(o.x1),SY(o.y1));
+        cP.lineTo(SX(o.x2),SY(o.y2));
+        cP.stroke();
+      } else if (o.t==='f'){
+        if (o.p.length<3) continue;
+        cP.beginPath();
+        cP.moveTo(SX(o.p[0][0]),SY(o.p[0][1]));
+        for (var j=1;j<o.p.length;j++) cP.lineTo(SX(o.p[j][0]),SY(o.p[j][1]));
+        cP.closePath();
+        cP.fillStyle=o.c; cP.fill();
+      } else if (o.t==='p'){
+        cP.beginPath();
+        cP.arc(SX(o.x),SY(o.y), Math.max(2,(o.r*K)/2), 0, Math.PI*2);
+        cP.fillStyle=o.c; cP.fill();
+      } else if (o.t==='t'){
+        cP.fillStyle=o.c;
+        cP.font = Math.max(11, Math.min(17, 13*Math.sqrt(K)))+'px -apple-system,sans-serif';
+        cP.fillText(o.s, SX(o.x), SY(o.y));
+      }
+    }
+    arrow();
+  }
+  function init(){
+    cvP=document.getElementById('cvP'); cvT=document.getElementById('cvT');
+    var b=document.getElementById('tbox').getBoundingClientRect();
+    W = b.width>10 ? b.width : 320;
+    H = b.height>10 ? b.height : 320;
+    var dpr=window.devicePixelRatio||1;
+    [cvP,cvT].forEach(function(c){
+      c.width=Math.round(W*dpr); c.height=Math.round(H*dpr);
+    });
+    cP=cvP.getContext('2d'); cT=cvT.getContext('2d');
+    paint();
+  }
+  function clearAll(){
+    ops=[]; x=0;y=0;a=0; dn=true; pc='#111111'; fc='#111111'; pw=2;
+    fill=null; vis=true; K=1; CX=0; CY=0; bgImg=null;
+    paint();
+  }
+
+  return {
+    init:init, reset:clearAll, paint:paint,
+    size:function(){ return [W,H]; },
+    fd:fd,
+    rt:function(d){ a-=d; mark(); },
+    lt:function(d){ a+=d; mark(); },
+    goto:jump,
+    setx:function(v){ jump(v,y); },
+    sety:function(v){ jump(x,v); },
+    seth:function(v){ a=v; mark(); },
+    home:function(){ jump(0,0); a=0; mark(); },
+    circle:circ,
+    dot:function(sz){ ops.push({t:'p',x:x,y:y,r:sz||8,c:pc}); mark(); },
+    pu:function(){ dn=false; },
+    pd:function(){ dn=true; },
+    pw:function(){ return pw; },
+    setpw:function(v){ pw=v; },
+    pcstr:function(){ return pc; },
+    fcstr:function(){ return fc; },
+    setpc:function(c){ pc=c; },
+    setfc:function(c){ fc=c; },
+    bf:function(){ fill=[[x,y]]; },
+    ef:function(){
+      if (fill && fill.length>2) ops.push({t:'f',p:fill.slice(),c:fc});
+      fill=null; mark();
+    },
+    speed:function(){},
+    ht:function(){ vis=false; mark(); },
+    st:function(){ vis=true; mark(); },
+    x:function(){ return x; },
+    y:function(){ return y; },
+    h:function(){ return a; },
+    clear:function(){ ops=[]; bgImg=null; paint(); },
+    bg:function(c){ cP.fillStyle=c; cP.fillRect(0,0,W,H); },
+    write:function(s){ ops.push({t:'t',x:x,y:y,s:String(s),c:pc}); mark(); },
+    showImage:function(url){
+      ops=[]; x=0; y=0; a=0; fill=null; vis=false;
+      var im=new Image();
+      im.onload=function(){ bgImg=im; paint(); };
+      im.onerror=function(){ bgImg=null; paint(); };
+      im.src=url;
+    },
+    png:function(){
+      var c=document.createElement('canvas');
+      c.width=cvP.width; c.height=cvP.height;
+      var g=c.getContext('2d');
+      g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
+      g.drawImage(cvP,0,0); g.drawImage(cvT,0,0);
+      return c;
+    }
+  };
+})();
+
+/* =====================================================================
+   二、注入 Python 版 turtle
+   ===================================================================== */
+var TURTLE_PY = `
+import sys, types, builtins
+from js import _tg as _t
+
+def _c(v):
+    if isinstance(v, (tuple, list)) and len(v) == 3:
+        return 'rgb(%d,%d,%d)' % (int(v[0]), int(v[1]), int(v[2]))
+    return str(v)
+
+class Turtle(object):
+    def forward(self, d): _t.fd(float(d))
+    def backward(self, d): _t.fd(-float(d))
+    def right(self, a): _t.rt(float(a))
+    def left(self, a): _t.lt(float(a))
+    def goto(self, x, y=None):
+        if y is None: x, y = x[0], x[1]
+        _t.goto(float(x), float(y))
+    def setx(self, x): _t.setx(float(x))
+    def sety(self, y): _t.sety(float(y))
+    def setheading(self, a): _t.seth(float(a))
+    def home(self): _t.home()
+    def circle(self, r, extent=360, steps=0): _t.circle(float(r), float(extent), int(steps))
+    def dot(self, size=None): _t.dot(0 if size is None else float(size))
+    def penup(self): _t.pu()
+    def pendown(self): _t.pd()
+    def pensize(self, w=None):
+        if w is None: return _t.pw()
+        _t.setpw(float(w))
+    def width(self, w=None): return self.pensize(w)
+    def pencolor(self, *c):
+        if not c: return _t.pcstr()
+        _t.setpc(_c(c[0] if len(c) == 1 else c))
+    def fillcolor(self, *c):
+        if not c: return _t.fcstr()
+        _t.setfc(_c(c[0] if len(c) == 1 else c))
+    def color(self, *c):
+        if not c: return (_t.pcstr(), _t.fcstr())
+        if len(c) == 1: self.pencolor(c[0]); self.fillcolor(c[0])
+        else: self.pencolor(c[0]); self.fillcolor(c[1])
+    def begin_fill(self): _t.bf()
+    def end_fill(self): _t.ef()
+    def speed(self, s=0): _t.speed(s)
+    def hideturtle(self): _t.ht()
+    def showturtle(self): _t.st()
+    def clear(self): _t.clear()
+    def reset(self): _t.reset()
+    def write(self, s, **kw): _t.write(str(s))
+    def xcor(self): return _t.x()
+    def ycor(self): return _t.y()
+    def pos(self): return (_t.x(), _t.y())
+    def heading(self): return _t.h()
+
+    fd = forward; bk = backward; back = backward
+    rt = right; lt = left
+    setpos = goto; setposition = goto; seth = setheading
+    pu = penup; up = penup; pd = pendown; down = pendown
+    ht = hideturtle; st = showturtle; position = pos
+
+class _Screen(object):
+    def __getattr__(self, n): return lambda *a, **k: None
+
+_T = Turtle()
+_M = types.ModuleType('turtle')
+_NS = ['forward','backward','right','left','goto','setx','sety','setheading','home',
+       'circle','dot','penup','pendown','pensize','width','pencolor','fillcolor',
+       'color','begin_fill','end_fill','speed','hideturtle','showturtle','clear',
+       'reset','write','xcor','ycor','pos','position','heading']
+for _n in _NS: setattr(_M, _n, getattr(_T, _n))
+for _a, _b in [('fd','forward'),('bk','backward'),('back','backward'),('rt','right'),
+               ('lt','left'),('setpos','goto'),('setposition','goto'),
+               ('seth','setheading'),('pu','penup'),('up','penup'),
+               ('pd','pendown'),('down','pendown'),('ht','hideturtle'),('st','showturtle')]:
+    setattr(_M, _a, getattr(_T, _b))
+_M.Turtle = Turtle
+_M.Screen = _Screen
+_M.getscreen = lambda: _Screen()
+for _f in ['done','mainloop','bye','exitonclick','setup','tracer','update','listen','onkey','onclick']:
+    setattr(_M, _f, lambda *a, **k: None)
+_M.title = lambda *a, **k: None
+_M.bgcolor = lambda c: _t.bg(str(c))
+sys.modules['turtle'] = _M
+
+def _input(prompt=''):
+    import js
+    r = js.window.prompt(str(prompt))
+    return '' if r is None else str(r)
+builtins.input = _input
+`;
+
+/* =====================================================================
+   三、matplotlib 支持
+   ===================================================================== */
+window.__fmPlots = [];
+window.__plot_png = function(b64){
+  window.__fmPlots.push(b64);
+  var box = document.getElementById('out');
+  var img = document.createElement('img');
+  img.src = 'data:image/png;base64,' + b64;
+  img.style.cssText = 'max-width:100%;display:block;margin:10px 0;background:#fff';
+  box.appendChild(img);
+  var p = document.getElementById('paneOut');
+  if (p) p.scrollTop = p.scrollHeight;
+};
+
+var FG_PY = [
+  "import io, base64",
+  "import matplotlib",
+  "matplotlib.use('Agg', force=True)",
+  "import matplotlib.pyplot as plt",
+  "from js import __plot_png",
+  "def _fm_show(*a, **k):",
+  "    for n in list(plt.get_fignums()):",
+  "        fig = plt.figure(n)",
+  "        buf = io.BytesIO()",
+  "        fig.savefig(buf, format='png', dpi=110, bbox_inches='tight', facecolor='white')",
+  "        __plot_png(base64.b64encode(buf.getvalue()).decode())",
+  "    plt.close('all')",
+  "plt.show = _fm_show"
+].join('\n');
+
+var FONT_PY = [
+  "import os",
+  "from matplotlib import font_manager",
+  "import matplotlib.pyplot as plt",
+  "for _p in ['/tmp/cjk.otf', '/tmp/cjk.ttf']:",
+  "    if os.path.exists(_p):",
+  "        font_manager.fontManager.addfont(_p)",
+  "        plt.rcParams['font.sans-serif'] = [font_manager.FontProperties(fname=_p).get_name()]",
+  "        plt.rcParams['axes.unicode_minus'] = False"
+].join('\n');
+
+var loaded = {};
+var fontReady = false;
+var DEF_FONT = 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/SubsetOTF/SC/NotoSansSC-Regular.otf';
+var fontUrl = '';
+/* =====================================================================
+   四、模块预检
+   ===================================================================== */
+var PKG = {
+  numpy:'numpy', pandas:'pandas', scipy:'scipy', matplotlib:'matplotlib',
+  sympy:'sympy', networkx:'networkx', PIL:'pillow', pillow:'pillow',
+  sklearn:'scikit-learn', seaborn:'seaborn'
+};
+var BAD = {
+  tkinter:'浏览器没有窗口系统',
+  pygame:'依赖本地窗口和音频设备',
+  requests:'浏览器里网络请求受限',
+  socket:'浏览器不允许操作网络套接字',
+  multiprocessing:'浏览器不支持多进程',
+  subprocess:'不能启动外部程序',
+  selenium:'不能控制另一个浏览器',
+  flask:'不能在本机开服务器',
+  django:'不能在本机开服务器'
+};
+function scan(code){
+  var need=[], bad=[], re=/^[ \t]*(?:import|from)[ \t]+([A-Za-z_][\w.]*)/gm, m;
+  while ((m=re.exec(code))){
+    var md=m[1].split('.')[0];
+    if (PKG[md] && need.indexOf(PKG[md])<0) need.push(PKG[md]);
+    if (BAD[md] && bad.indexOf(md)<0) bad.push(md);
+  }
+  return {need:need, bad:bad};
+}
+
+/* =====================================================================
+   五、新建类型（带模板）
+   ===================================================================== */
+var KINDS = [
+  { id:'calc', icon:'🧮', name:'纯计算', desc:'算数、循环、验证思路',
+    tpl:
+'# 纯计算\n' +
+'# 在这里写代码，点「▶ 运行」看结果\n\n' +
+'print("hello")\n\n' +
+'for i in range(1, 6):\n' +
+'    print(i, i * i)\n' },
+
+  { id:'plot', icon:'📈', name:'物理图像', desc:'画函数、画数据曲线',
+    tpl:
+'# 物理图像\n' +
+'import numpy as np\n' +
+'import matplotlib.pyplot as plt\n\n' +
+'x = np.linspace(0, 10, 300)\n' +
+'y = np.sin(x) * np.exp(-x / 5)\n\n' +
+'plt.figure(figsize=(7, 5))\n' +
+'plt.plot(x, y, linewidth=1.6, label="damped oscillation")\n' +
+'plt.xlabel("x")\n' +
+'plt.ylabel("y")\n' +
+'plt.grid(ls="--", alpha=0.35)\n' +
+'plt.legend()\n' +
+'plt.tight_layout()\n' +
+'plt.show()\n' },
+
+  { id:'turtle', icon:'🐢', name:'海龟绘图', desc:'几何图形、分形、图案',
+    tpl:
+'# 海龟绘图\n' +
+'import turtle\n\n' +
+'t = turtle.Turtle()\n' +
+'t.speed(0)\n' +
+'t.pensize(2)\n' +
+'t.pencolor("steelblue")\n\n' +
+'for i in range(4):\n' +
+'    t.forward(120)\n' +
+'    t.right(90)\n\n' +
+'turtle.done()\n' },
+
+  { id:'sympy', icon:'∑', name:'符号推导', desc:'求导、积分、解方程',
+    tpl:
+'# 符号推导（可以拿它验算手推的结果）\n' +
+'from sympy import *\n\n' +
+'x = symbols("x")\n' +
+'f = x**3 * exp(-x)\n\n' +
+'print("原式 :", f)\n' +
+'print("导数 :", diff(f, x))\n' +
+'print("积分 :", integrate(f, x))\n' +
+'print("二阶导:", diff(f, x, 2))\n' +
+'print("解方程:", solve(x**2 - 5*x + 6, x))\n' },
+
+  { id:'fit', icon:'📊', name:'数据拟合', desc:'实验数据 → 曲线 + 参数',
+    tpl:
+'# 数据拟合\n' +
+'import numpy as np\n' +
+'import matplotlib.pyplot as plt\n' +
+'from scipy.optimize import curve_fit\n\n' +
+'# === 把测量数据填到这里 ===\n' +
+'xdata = np.array([1, 2, 3, 4, 5, 6])\n' +
+'ydata = np.array([2.1, 3.9, 6.2, 7.8, 10.1, 12.2])\n\n' +
+'def model(x, a, b):\n' +
+'    return a * x + b\n\n' +
+'popt, pcov = curve_fit(model, xdata, ydata)\n' +
+'print("拟合参数 a, b =", popt)\n' +
+'print("参数标准差  =", np.sqrt(np.diag(pcov)))\n\n' +
+'xs = np.linspace(min(xdata), max(xdata), 100)\n' +
+'plt.figure(figsize=(7, 5))\n' +
+'plt.plot(xdata, ydata, "o", label="data")\n' +
+'plt.plot(xs, model(xs, *popt), "-", label="fit")\n' +
+'plt.xlabel("x")\n' +
+'plt.ylabel("y")\n' +
+'plt.grid(ls="--", alpha=0.35)\n' +
+'plt.legend()\n' +
+'plt.tight_layout()\n' +
+'plt.show()\n' },
+
+  { id:'mc', icon:'🎲', name:'随机模拟', desc:'蒙特卡洛、随机游走',
+    tpl:
+'# 蒙特卡洛：估算 pi\n' +
+'import random\n' +
+'import matplotlib.pyplot as plt\n\n' +
+'N = 4000\n' +
+'ix, iy, ox, oy = [], [], [], []\n\n' +
+'for _ in range(N):\n' +
+'    x = random.uniform(-1, 1)\n' +
+'    y = random.uniform(-1, 1)\n' +
+'    if x*x + y*y <= 1:\n' +
+'        ix.append(x); iy.append(y)\n' +
+'    else:\n' +
+'        ox.append(x); oy.append(y)\n\n' +
+'pi = 4 * len(ix) / N\n' +
+'print("估算 pi  =", pi)\n' +
+'print("误差     =", abs(pi - 3.14159265))\n\n' +
+'plt.figure(figsize=(6, 6))\n' +
+'plt.scatter(ix, iy, s=1, c="steelblue")\n' +
+'plt.scatter(ox, oy, s=1, c="crimson")\n' +
+'plt.axis("equal")\n' +
+'plt.title("Monte Carlo  pi = %.4f" % pi)\n' +
+'plt.tight_layout()\n' +
+'plt.show()\n' }
+];
+
+/* =====================================================================
+   六、代码片段库
+   ===================================================================== */
+var SNIPPETS = [
+  { g:'绘图', n:'折线 + 网格', c:
+'plt.figure(figsize=(7, 5))\n' +
+'plt.plot(x, y, linewidth=1.6, label="label")\n' +
+'plt.xlabel("x")\n' +
+'plt.ylabel("y")\n' +
+'plt.grid(ls="--", alpha=0.35)\n' +
+'plt.legend()\n' +
+'plt.tight_layout()\n' +
+'plt.show()\n' },
+
+  { g:'绘图', n:'散点 + 误差棒', c:
+'plt.figure(figsize=(7, 5))\n' +
+'plt.errorbar(x, y, yerr=dy, fmt="o", capsize=4, label="data")\n' +
+'plt.xlabel("x")\n' +
+'plt.ylabel("y")\n' +
+'plt.grid(ls="--", alpha=0.35)\n' +
+'plt.legend()\n' +
+'plt.show()\n' },
+
+  { g:'绘图', n:'双 y 轴', c:
+'fig, ax1 = plt.subplots(figsize=(7, 5))\n' +
+'ax1.plot(x, y1, color="steelblue")\n' +
+'ax1.set_xlabel("x")\n' +
+'ax1.set_ylabel("y1", color="steelblue")\n' +
+'ax2 = ax1.twinx()\n' +
+'ax2.plot(x, y2, color="crimson")\n' +
+'ax2.set_ylabel("y2", color="crimson")\n' +
+'plt.tight_layout()\n' +
+'plt.show()\n' },
+
+  { g:'绘图', n:'2D 热图/色图', c:
+'import numpy as np\n' +
+'import matplotlib.pyplot as plt\n\n' +
+'X, Y = np.meshgrid(np.linspace(-3, 3, 120), np.linspace(-3, 3, 120))\n' +
+'Z = np.exp(-(X**2 + Y**2))\n\n' +
+'plt.figure(figsize=(6, 5))\n' +
+'plt.pcolormesh(X, Y, Z, shading="auto", cmap="viridis")\n' +
+'plt.colorbar(label="Z")\n' +
+'plt.xlabel("x")\n' +
+'plt.ylabel("y")\n' +
+'plt.tight_layout()\n' +
+'plt.show()\n' },
+
+  { g:'绘图', n:'3D 曲面', c:
+'import numpy as np\n' +
+'import matplotlib.pyplot as plt\n\n' +
+'fig = plt.figure(figsize=(7, 5))\n' +
+'ax = fig.add_subplot(111, projection="3d")\n' +
+'X, Y = np.meshgrid(np.linspace(-3, 3, 60), np.linspace(-3, 3, 60))\n' +
+'Z = np.sin(np.sqrt(X**2 + Y**2))\n' +
+'ax.plot_surface(X, Y, Z, cmap="viridis", linewidth=0)\n' +
+'ax.set_xlabel("x"); ax.set_ylabel("y"); ax.set_zlabel("z")\n' +
+'plt.tight_layout()\n' +
+'plt.show()\n' },
+
+  { g:'数学', n:'解方程组', c:
+'from sympy import *\n' +
+'x, y = symbols("x y")\n' +
+'sol = solve([x + y - 3, x - y - 1], [x, y])\n' +
+'print(sol)\n' },
+
+  { g:'数学', n:'矩阵特征值', c:
+'import numpy as np\n' +
+'A = np.array([[2, 1], [1, 2]], dtype=float)\n' +
+'w, v = np.linalg.eig(A)\n' +
+'print("特征值:", w)\n' +
+'print("特征向量:\\n", v)\n' },
+
+  { g:'数学', n:'解一阶微分方程', c:
+'from scipy.integrate import odeint\n' +
+'import numpy as np\n\n' +
+'def model(y, t, k):\n' +
+'    return -k * y\n\n' +
+'t = np.linspace(0, 5, 200)\n' +
+'y = odeint(model, 1.0, t, args=(0.8,))\n' +
+'print("末值:", y[-1, 0])\n' },
+
+  { g:'数学', n:'数值积分', c:
+'from scipy.integrate import quad\n' +
+'import numpy as np\n\n' +
+'val, err = quad(lambda x: np.exp(-x**2), 0, np.inf)\n' +
+'print("结果 =", val, " 误差 =", err)\n' },
+
+  { g:'数学', n:'傅里叶变换', c:
+'import numpy as np\n' +
+'import matplotlib.pyplot as plt\n\n' +
+'N = 1024\n' +
+'t = np.linspace(0, 1, N, endpoint=False)\n' +
+'sig = np.sin(2*np.pi*5*t) + 0.5*np.sin(2*np.pi*20*t)\n\n' +
+'F = np.abs(np.fft.rfft(sig))\n' +
+'freq = np.fft.rfftfreq(N, d=1/N)\n\n' +
+'plt.figure(figsize=(7, 5))\n' +
+'plt.plot(freq, F)\n' +
+'plt.xlabel("频率 / Hz")\n' +
+'plt.ylabel("幅度")\n' +
+'plt.grid(ls="--", alpha=0.35)\n' +
+'plt.show()\n' },
+
+  { g:'数据', n:'表格数据（手输）', c:
+'import numpy as np\n\n' +
+'data = """\n' +
+'1   2.1\n' +
+'2   3.9\n' +
+'3   6.2\n' +
+'4   7.8\n' +
+'"""\n\n' +
+'rows = [list(map(float, l.split())) for l in data.strip().splitlines()]\n' +
+'x = np.array([r[0] for r in rows])\n' +
+'y = np.array([r[1] for r in rows])\n' +
+'print("x =", x)\n' +
+'print("y =", y)\n' },
+
+  { g:'常用', n:'计时器', c:
+'import time\n' +
+'t0 = time.time()\n\n' +
+'# ... 你的代码 ...\n\n' +
+'print("耗时 %.3f 秒" % (time.time() - t0))\n' },
+
+  { g:'常用', n:'打印对齐表格', c:
+'rows = [("张三", 88, 92), ("李四", 79, 95)]\n' +
+'print("%-8s %6s %6s" % ("姓名", "数学", "物理"))\n' +
+'for n, a, b in rows:\n' +
+'    print("%-8s %6d %6d" % (n, a, b))\n' }
+];
+
+/* =====================================================================
+   七、工作区
+   ===================================================================== */
+var $=function(s){return document.querySelector(s)};
+var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var ed=$('#code'), outEl=$('#out'), py=null;
+
+var WK={items:[],cur:0};
+try{
+  var saved=localStorage.getItem('pywk2');
+  if(saved){ var o=JSON.parse(saved); if(o&&o.items&&o.items.length) WK=o; }
+}catch(e){}
+if(!WK.items.length) WK.items.push({title:'笔记 1',code:'',out:'',img:null,kind:'calc'});
+if(WK.cur>=WK.items.length) WK.cur=0;
+WK.items.forEach(function(it){ if(!it.kind) it.kind='calc'; });
+
+function kindOf(id){
+  for (var i=0;i<KINDS.length;i++) if (KINDS[i].id===id) return KINDS[i];
+  return KINDS[0];
+}
+
+var saveTimer = null;
+function wsave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    try{
+      var copy = WK.items.map(function(it){
+        return {title:it.title, code:it.code, out:it.out, kind:it.kind};
+      });
+      localStorage.setItem('pywk2', JSON.stringify({items:copy, cur:WK.cur}));
+    }catch(e){}
+  }, 320);
+}
+
+function wstore(){
+  var it=WK.items[WK.cur];
+  if(!it) return;
+  it.code=ed.value;
+  it.out=outEl.textContent||'';
+  wsave();
+}
+function wload(){
+  var it=WK.items[WK.cur];
+  if(!it) return;
+  ed.value=it.code||'';
+  $('#eTitle').textContent=it.title||'题目';
+  clean();
+  if(it.out) put(it.out);
+  if (it.img) window._tg.showImage(it.img);
+  else window._tg.reset();
+  if (window.renderHL) renderHL();
+}
+function put(s,cls){
+  var sp=document.createElement('span');
+  if(cls) sp.className=cls;
+  sp.textContent=s;
+  outEl.appendChild(sp);
+  var p=$('#paneOut'); p.scrollTop=p.scrollHeight;
+}
+function clean(){ outEl.textContent=''; }
+function tab(n){
+  $$('.tabs button').forEach(function(b){ b.classList.toggle('on', b.dataset.p===n); });
+  $('#paneOut').classList.toggle('on', n==='out');
+  $('#paneTurtle').classList.toggle('on', n==='turtle');
+  if (n==='turtle'){ window._tg.init(); }
+}
+function state(t,c){ var s=$('#st'); s.textContent=t; s.className=c||''; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function show(id){ $$('.pg').forEach(function(v){ v.classList.toggle('on', v.id===id); }); }
+
+/* =====================================================================
+   八、首页
+   ===================================================================== */
+function renderHome(){
+  $('#kinds').innerHTML = KINDS.map(function(k){
+    return '<div class="kind" data-k="'+k.id+'">'
+      + '<div class="ki">'+k.icon+'</div>'
+      + '<div class="kn">'+esc(k.name)+'</div>'
+      + '<div class="kd">'+esc(k.desc)+'</div></div>';
+  }).join('');
+  $$('#kinds .kind').forEach(function(el){
+    el.onclick=function(){ newFrom(el.dataset.k); };
+  });
+  renderWList();
+}
+function renderWList(){
+  var box=$('#wlist');
+  if(!WK.items.length){
+    box.innerHTML='<div class="empty">还没有题目，点上面任意一个开始</div>';
+    return;
+  }
+  var h='<div class="wlist">';
+  WK.items.forEach(function(it,i){
+    var k=kindOf(it.kind);
+    var len=(it.code||'').split('\n').length;
+    h+='<div class="witem" data-i="'+i+'">'
+      + '<span class="wi">'+k.icon+'</span>'
+      + '<span class="wt"><span class="wn">'+esc(it.title||('题目 '+(i+1)))+'</span>'
+      + '<span class="wd">'+len+' 行 · '+esc(k.name)+'</span></span>'
+      + '<span class="wa">›</span></div>';
+  });
+  h+='</div>';
+  box.innerHTML=h;
+  $$('#wlist .witem').forEach(function(el){
+    el.onclick=function(){
+      WK.cur=parseInt(el.dataset.i,10);
+      openEdit();
+    };
+  });
+}
+
+function newFrom(kindId){
+  var k=kindOf(kindId);
+  wstore();
+  var n=0;
+  WK.items.forEach(function(it){ if(it.kind===kindId) n++; });
+  var it={title:k.name+(n?(' '+(n+1)):''), code:k.tpl, out:'', img:null, kind:kindId};
+  WK.items.unshift(it);
+  WK.cur=0;
+  wsave();
+  openEdit();
+}
+
+function openEdit(){
+  wload();
+  show('v-edit');
+  window._tg.init();
+  if ((WK.items[WK.cur].img)){ window._tg.showImage(WK.items[WK.cur].img); }
+}
+
+/* =====================================================================
+   九、片段面板
+   ===================================================================== */
+function drawSnip(){
+  var h='<h3>📎 代码片段</h3>';
+  h+='<div class="mini">点一下插入到光标处</div>';
+  var cur='';
+  SNIPPETS.forEach(function(s,i){
+    if (s.g!==cur){ cur=s.g; h+='<div class="sgrp">'+esc(cur)+'</div>'; }
+    var first=(s.c.split('\n')[0]||'').slice(0,26);
+    h+='<div class="sni" data-i="'+i+'"><span class="sn">'+esc(s.n)+'</span>'
+      + '<span class="sc">'+esc(first)+'</span></div>';
+  });
+  h+='<button class="cls" id="snClose">关闭</button>';
+  $('#shSnip').innerHTML=h;
+  $$('#shSnip .sni').forEach(function(el){
+    el.onclick=function(){ insertSnip(parseInt(el.dataset.i,10)); };
+  });
+  $('#snClose').onclick=closeAll;
+}
+function insertSnip(i){
+  var s=SNIPPETS[i];
+  if(!s) return;
+  var v=ed.value;
+  var p=ed.selectionStart;
+  var before=v.slice(0,p);
+  var need=before.length && before.charAt(before.length-1)!=='\n' ? '\n\n' : '';
+  ed.value = before + need + s.c + v.slice(ed.selectionEnd);
+  var pos=(before+need+s.c).length;
+  ed.selectionStart=ed.selectionEnd=pos;
+  ed.focus();
+  closeAll();
+  toast('已插入：'+s.n);
+  wstore();
+  renderHL();
+}
+
+/* =====================================================================
+   十、引擎加载
+   ===================================================================== */
+async function boot(){
+  try{
+    py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/'});
+    py.setStdout({batched:function(s){ put(s+'\n'); }});
+    py.setStderr({batched:function(s){ put(s+'\n','err'); }});
+    await py.runPythonAsync(TURTLE_PY);
+    state('就绪','ok');
+    $('#loading').classList.add('hide');
+  }catch(e){
+    state('失败','bad');
+    $('#loading').classList.add('hide');
+    put('Python 引擎加载失败：\n'+(e.message||e)+'\n\n请检查网络后刷新页面重试。\n','err');
+  }
+}
+
+/* =====================================================================
+   十一、运行
+   ===================================================================== */
+async function run(){
+  if(!py){ put('引擎还在加载，请稍等…\n','warn'); return; }
+  var code=ed.value;
+  if(!code.trim()){ put('代码是空的。\n','warn'); return; }
+
+  clean();
+  window.__fmPlots = [];
+  window._tg.init();
+  window._tg.reset();
+
+  var sc = scan(code);
+  if (sc.bad.length){
+    var sb = '⚠ 检测到可能跑不了的模块：\n';
+    for (var bi=0;bi<sc.bad.length;bi++) sb += '   · '+sc.bad[bi]+' —— '+BAD[sc.bad[bi]]+'\n';
+    put(sb, 'warn');
+  }
+
+  var btn=$('#run'); btn.disabled=true; btn.textContent='运行中…';
+
+  var todo = sc.need.filter(function(n){ return !loaded[n]; });
+  if (todo.length){
+    put('📦 正在下载：' + todo.join('、') + '\n', 'info');
+    put('   首次比较慢，之后浏览器会缓存\n', 'info');
+    var t1 = Date.now();
+    try{
+      for (var k=0;k<todo.length;k++){
+        await py.loadPackage(todo[k], {
+          messageCallback: function(m){
+            if (/Downloading|Loading|Loaded/.test(String(m))) put('   ' + m + '\n', 'info');
+          }
+        });
+        loaded[todo[k]] = true;
+      }
+      put('✓ 库已就绪（' + ((Date.now()-t1)/1000).toFixed(1) + 's）\n', 'okc');
+    }catch(e){
+      put('✗ 库下载失败：' + (e.message||e) + '\n', 'err');
+      put('  检查网络后刷新页面重试。\n', 'warn');
+      btn.disabled=false; btn.textContent='▶ 运行';
+      return;
+    }
+  }
+
+  var hasT = /import[ \t]+turtle|from[ \t]+turtle/.test(code);
+  var hasM = /import[ \t]+matplotlib|from[ \t]+matplotlib/.test(code);
+  tab(hasM ? 'out' : (hasT ? 'turtle' : 'out'));
+
+  var t0 = Date.now();
+  try{
+    if (hasM){
+      await py.runPythonAsync(FG_PY);
+      if (fontReady) await py.runPythonAsync(FONT_PY);
+    }
+    await py.runPythonAsync(code);
+    put('\n—— 运行结束（'+(Date.now()-t0)+' ms）\n','info');
+  }catch(e){
+    var em = String(e.message||e);
+    put('\n'+em+'\n','err');
+    var hits = em.match(/line (\d+)/g);
+    if (hits && hits.length){
+      var ln = parseInt(hits[hits.length-1].replace(/\D/g,''), 10);
+      if (ln > 0){
+        var gb = document.createElement('button');
+        gb.className = 'gotoline';
+        gb.textContent = '↗ 跳到第 ' + ln + ' 行';
+        gb.onclick = function(){ gotoLine(ln); };
+        outEl.appendChild(gb);
+        put('\n');
+      }
+    }
+    tab('out');
+  }
+  btn.disabled=false; btn.textContent='▶ 运行';
+
+  var it=WK.items[WK.cur];
+  it.code=code;
+  it.out=outEl.textContent||'';
+  if (window.__fmPlots.length){
+    it.img = 'data:image/png;base64,' + window.__fmPlots[0];
+  } else if (hasT && window._tg.size()[0]>10){
+    try{ it.img=window._tg.png().toDataURL('image/png'); }catch(e){ it.img=null; }
+  }
+  wsave();
+}
+/* =====================================================================
+   十二、编辑器增强（语法高亮 / 主题 / 跳转）
+   ===================================================================== */
+var PY_RE = /(#.*)|('''[\s\S]*?'''|"""[\s\S]*?""")|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|\b(import|from|as|def|class|return|if|elif|else|for|while|in|not|and|or|is|None|True|False|try|except|finally|raise|with|lambda|yield|global|nonlocal|assert|del|pass|break|continue|async|await|match|case)\b|\b(\d[\d_]*\.?[\d_]*(?:[eE][+-]?\d+)?)\b|\b(print|len|range|int|float|str|list|dict|set|tuple|sum|max|min|abs|round|sorted|enumerate|zip|map|filter|open|input|isinstance|type|super|self|bool|complex|bytes|repr|format|help|dir|vars|id|hash)\b/g;
+
+function escH(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function highlight(src){
+  if (src.length > 60000) return escH(src);
+  var out='', last=0, m;
+  PY_RE.lastIndex = 0;
+  while ((m = PY_RE.exec(src))){
+    if (m.index > last) out += escH(src.slice(last, m.index));
+    var cls = m[1] ? 'c' : ((m[2]||m[3]) ? 's' : (m[4] ? 'k' : (m[5] ? 'n' : 'b')));
+    out += '<span class="tk-'+cls+'">' + escH(m[0]) + '</span>';
+    last = m.index + m[0].length;
+    if (m[0].length === 0) PY_RE.lastIndex++;
+  }
+  out += escH(src.slice(last));
+  return out;
+}
+
+var hlEl = document.getElementById('hl');
+var hlTimer = null;
+var rafId = 0;
+var composing = false;
+var HL_MAX = 60000;
+
+function renderHL(){
+  if (!hlEl || !ed) return;
+  var src = ed.value;
+  if (src.length > HL_MAX){
+    hlEl.textContent = src + '\n';
+  } else {
+    hlEl.innerHTML = highlight(src) + '\n';
+  }
+  syncScroll();
+}
+function renderHLSoon(){
+  if (hlTimer) return;
+  hlTimer = setTimeout(function(){
+    hlTimer = null;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(function(){
+      rafId = 0;
+      renderHL();
+    });
+  }, 130);
+}
+function syncScroll(){
+  if (!hlEl || !ed) return;
+  hlEl.style.transform = 'translate(' + (-ed.scrollLeft) + 'px,' + (-ed.scrollTop) + 'px)';
+}
+function syncScrollSoon(){
+  if (rafId) return;
+  rafId = requestAnimationFrame(function(){
+    rafId = 0;
+    syncScroll();
+  });
+}
+
+function gotoLine(n){
+  var ls = ed.value.split('\n');
+  if (!ls.length) return;
+  if (n < 1) n = 1;
+  if (n > ls.length) n = ls.length;
+  var pos = 0;
+  for (var i = 0; i < n - 1; i++) pos += ls[i].length + 1;
+  ed.focus();
+  try{ ed.setSelectionRange(pos, pos + (ls[n-1] || '').length); }catch(e){}
+  renderHLSoon();
+}
+
+var THEME_KEY = 'pytheme';
+function applyTheme(){
+  var t = '';
+  try{ t = localStorage.getItem(THEME_KEY) || ''; }catch(e){}
+  if (t === 'light') document.body.classList.add('light');
+  else document.body.classList.remove('light');
+  $$('.btheme').forEach(function(b){
+    b.textContent = (t === 'light') ? '🌙' : '☀️';
+  });
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', t === 'light' ? '#ffffff' : '#0a0c10');
+}
+function toggleTheme(){
+  var t = '';
+  try{ t = localStorage.getItem(THEME_KEY) || ''; }catch(e){}
+  t = (t === 'light') ? 'dark' : 'light';
+  try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
+  applyTheme();
+  renderHLSoon();
+}
+
+/* =====================================================================
+   十三、导出
+   ===================================================================== */
+function dl(name, data, mime){
+  var blob = (data instanceof Blob) ? data : new Blob([data], {type: mime||'text/plain;charset=utf-8'});
+  var u=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=u; a.download=name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(u); }, 5000);
+}
+function nbSrc(text){
+  var ls=String(text||'').split('\n'), out=[];
+  for (var i=0;i<ls.length;i++) out.push(i<ls.length-1 ? ls[i]+'\n' : ls[i]);
+  if (!out.length) out=[''];
+  return out;
+}
+function nbCodeCell(it, n){
+  var out=[];
+  if (it.out && it.out.trim())
+    out.push({name:'stdout', output_type:'stream', text:nbSrc(it.out)});
+  if (it.img)
+    out.push({data:{'image/png': String(it.img).split(',')[1]}, metadata:{}, output_type:'display_data'});
+  return {cell_type:'code', execution_count:n, metadata:{}, outputs:out, source:nbSrc(it.code)};
+}
+function buildNb(items){
+  var cells=[];
+  items.forEach(function(it,i){
+    cells.push({cell_type:'markdown', metadata:{}, source:nbSrc('### '+(it.title||('题目 '+(i+1))))});
+    cells.push(nbCodeCell(it, i+1));
+  });
+  return {
+    cells:cells,
+    metadata:{
+      kernelspec:{display_name:'Python 3', language:'python', name:'python3'},
+      language_info:{name:'python', version:'3.12.0', mimetype:'text/x-python',
+        file_extension:'.py', pygments_lexer:'ipython3', nbconvert_exporter:'python',
+        codemirror_mode:{name:'ipython', version:3}}
+    },
+    nbformat:4, nbformat_minor:5
+  };
+}
+function safe(s){ return String(s||'work').replace(/[\\/:*?"<>|]/g,'_').slice(0,30); }
+
+/* =====================================================================
+   十四、题目面板
+   ===================================================================== */
+function drawWk(){
+  var box=$('#shWk'), h='<h3>📚 我的题目（'+WK.items.length+'）</h3>';
+  WK.items.forEach(function(it,i){
+    var k=kindOf(it.kind);
+    h+='<div class="row'+(i===WK.cur?' cur':'')+'" data-i="'+i+'">'
+      +'<span class="t">'+k.icon+' '+esc(String(it.title||('题目 '+(i+1))))+'</span>'
+      +'<span class="x" data-del="'+i+'">✕</span></div>';
+  });
+  h+='<button class="act" id="wkRen">✏️ 重命名当前题目</button>';
+  h+='<button class="act" id="wkImp">📂 从 .ipynb 文件导入</button>';
+  h+='<button class="cls" id="wkClose">关闭</button>';
+  box.innerHTML=h;
+
+  box.querySelectorAll('.row').forEach(function(r){
+    r.onclick=function(ev){
+      if (ev.target.dataset && ev.target.dataset.del!==undefined){
+        var d=parseInt(ev.target.dataset.del,10);
+        if (WK.items.length<=1){ alert('至少保留一道题目'); return; }
+        wstore();
+        WK.items.splice(d,1);
+        if (WK.cur>=WK.items.length) WK.cur=WK.items.length-1;
+        wsave(); wload(); drawWk();
+        return;
+      }
+      wstore();
+      WK.cur=parseInt(r.dataset.i,10);
+      wload(); drawWk();
+      closeAll();
+    };
+  });
+  $('#wkRen').onclick=function(){
+    var it=WK.items[WK.cur];
+    var n=window.prompt('题目名称：', it.title||'');
+    if(n!==null && n.trim()){
+      it.title=n.trim();
+      $('#eTitle').textContent=it.title;
+      wsave(); drawWk();
+    }
+  };
+  $('#wkImp').onclick=function(){ var f=$('#fileIp'); f.value=''; f.click(); };
+  $('#wkClose').onclick=closeAll;
+}
+
+/* =====================================================================
+   十五、导出菜单
+   ===================================================================== */
+function drawEx(){
+  var it=WK.items[WK.cur];
+  $('#shEx').innerHTML=
+    '<h3>导出 · 共 '+(WK.items.length)+' 道题</h3>'
+    +'<button class="act" id="ex1">📄 导出当前题目（.py）</button>'
+    +'<button class="act" id="ex2">📓 导出当前题目（.ipynb，含运行结果）</button>'
+    +'<button class="act" id="ex3">📦 导出全部 '+WK.items.length+' 道题（合并成一个 .ipynb）</button>'
+    +'<button class="act" id="ex4">🖼 保存当前图片（.png）</button>'
+    +'<button class="cls" id="exClose">关闭</button>';
+  $('#ex1').onclick=function(){ wstore(); dl(safe(it.title)+'.py', ed.value, 'text/x-python;charset=utf-8'); closeAll(); };
+  $('#ex2').onclick=function(){ wstore(); dl(safe(it.title)+'.ipynb', JSON.stringify(buildNb([it]),null,1), 'application/json'); closeAll(); };
+  $('#ex3').onclick=function(){ wstore(); dl('作业.ipynb', JSON.stringify(buildNb(WK.items),null,1), 'application/json'); closeAll(); };
+  $('#ex4').onclick=function(){
+    if(!it.img){ alert('这道题还没有图形（图片只在本次会话内保存）'); return; }
+    var a=document.createElement('a'); a.href=it.img; a.download=safe(it.title)+'.png'; a.click();
+    closeAll();
+  };
+  $('#exClose').onclick=closeAll;
+}
+function closeAll(){
+  ['mask1','mask2','mask3','mask4'].forEach(function(id){
+    var m=document.getElementById(id);
+    if(m) m.classList.remove('on');
+  });
+}
+
+/* =====================================================================
+   十六、库与字体面板
+   ===================================================================== */
+function drawLib(){
+  var h='<h3>📦 库与字体</h3>';
+  h+='<div class="mini">第三方库会在你点「运行」时<b>自动下载</b>，不用手动装。</div>';
+  h+='<div class="mini" style="margin-bottom:6px">已加载：</div>';
+  var names=Object.keys(loaded);
+  if (names.length){
+    h+='<div class="pkgs">';
+    names.forEach(function(n){ h+='<span class="pkg on">'+esc(n)+' ✓</span>'; });
+    h+='</div>';
+  } else {
+    h+='<div class="mini" style="color:var(--dim2)">（还没有）</div>';
+  }
+  var all=Object.keys(PKG), uniq=[];
+  all.forEach(function(k){ if (uniq.indexOf(PKG[k])<0) uniq.push(PKG[k]); });
+  h+='<div class="mini" style="margin-bottom:6px">可自动下载：</div><div class="pkgs">';
+  uniq.forEach(function(n){
+    h+='<span class="pkg'+(loaded[n]?' on':'')+'">'+esc(n)+'</span>';
+  });
+  h+='</div>';
+
+  h+='<div class="mini" style="margin-top:14px;color:var(--text);font-weight:600">中文字体</div>';
+  h+='<div class="mini">matplotlib 默认不带中文字体，图里的中文会变成方框。点下面安装一次（约 8MB）。</div>';
+  h+='<input id="font-url" placeholder="留空使用默认地址" value="'+esc(fontUrl||'')+'">';
+  h+='<button class="act" id="libFont">🔤 安装中文字体</button>';
+  h+='<div class="mini" id="fontState">'+(fontReady?'✓ 已安装（本次会话有效）':'未安装')+'</div>';
+  h+='<button class="cls" id="libClose">关闭</button>';
+  $('#shLib').innerHTML=h;
+
+  $('#libFont').onclick=installFont;
+  $('#libClose').onclick=closeAll;
+}
+
+async function installFont(){
+  if (!py){ alert('引擎还没加载好，稍等'); return; }
+  var inp=$('#font-url');
+  fontUrl = inp ? inp.value.trim() : '';
+  var url = fontUrl || DEF_FONT;
+  $('#fontState').textContent = '正在下载字体…';
+  try{
+    if (!loaded['matplotlib']){
+      $('#fontState').textContent = '先下载 matplotlib…';
+      await py.loadPackage('matplotlib');
+      loaded['matplotlib'] = true;
+    }
+    var r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var ab = await r.arrayBuffer();
+    py.FS.writeFile('/tmp/cjk.otf', new Uint8Array(ab));
+    await py.runPythonAsync(FONT_PY);
+    fontReady = true;
+    $('#fontState').innerHTML = '<span style="color:var(--acc)">✓ 中文字体已装好</span>';
+  }catch(e){
+    $('#fontState').innerHTML = '<span style="color:var(--bad)">✗ 失败：'+esc(e.message||e)+'</span>';
+  }
+}
+
+/* =====================================================================
+   十七、导入 .ipynb
+   ===================================================================== */
+function nbText(src){
+  if (Array.isArray(src)) return src.join('');
+  return String(src==null?'':src);
+}
+function parseNb(json){
+  var cells=json.cells||[], items=[], cur=null, i, j;
+  for (i=0;i<cells.length;i++){
+    var c=cells[i];
+    if (c.cell_type==='markdown'){
+      var m=nbText(c.source).match(/^#+[ \t]*(.+)$/m);
+      if (m){ cur={title:m[1].trim(),code:'',out:'',img:null,kind:'calc'}; items.push(cur); }
+      continue;
+    }
+    if (c.cell_type!=='code') continue;
+    var tgt;
+    if (cur && !cur.used){ tgt=cur; }
+    else { tgt={title:'导入 '+(items.length+1),code:'',out:'',img:null,kind:'calc'}; items.push(tgt); }
+    tgt.used=true;
+    tgt.code=nbText(c.source);
+    var outs=c.outputs||[];
+    for (j=0;j<outs.length;j++){
+      var o=outs[j];
+      if (o.output_type==='stream'){ tgt.out+=nbText(o.text); }
+      else if (o.data && o.data['image/png']){
+        var b=o.data['image/png'];
+        tgt.img='data:image/png;base64,'+(Array.isArray(b)?b.join(''):String(b)).replace(/\s+/g,'');
+      } else if (o.text){ tgt.out+=nbText(o.text); }
+    }
+  }
+  for (i=0;i<items.length;i++) delete items[i].used;
+  return items;
+}
+$('#fileIp').onchange=function(){
+  var f=this.files && this.files[0];
+  if(!f) return;
+  if(f.size>8*1024*1024){ alert('文件超过 8MB，手机上可能打不开'); this.value=''; return; }
+  var fr=new FileReader();
+  fr.onload=function(){
+    var items;
+    try{
+      var j=JSON.parse(fr.result);
+      if(!j || !j.cells) throw new Error('不是合法的 notebook 文件');
+      items=parseNb(j);
+    }catch(e){ alert('读取失败：'+e.message); return; }
+    if(!items.length){ alert('这个文件里没有找到可导入的代码'); return; }
+    wstore();
+    for(var i=0;i<items.length;i++) WK.items.splice(i,0,items[i]);
+    WK.cur=0;
+    wsave(); wload(); renderHome();
+    alert('已导入 '+items.length+' 道题目');
+  };
+  fr.readAsText(f);
+  this.value='';
+};
+
+/* =====================================================================
+   十八、快捷键 / 事件
+   ===================================================================== */
+[['Tab','    '],['  :  ',':'],['  (  ','('],['  )  ',')'],['  "  ','"'],
+ ["  '  ","'"],['  =  ','='],['  _  ','_'],['  #  ','#'],['  .  ','.'],
+ ['  ,  ',','],['  [  ','['],['  ]  ',']']].forEach(function(kv){
+  var b=document.createElement('button');
+  b.textContent=kv[0];
+  b.onclick=function(){
+    var s=ed.selectionStart,e=ed.selectionEnd;
+    ed.value=ed.value.slice(0,s)+kv[1]+ed.value.slice(e);
+    ed.selectionStart=ed.selectionEnd=s+kv[1].length;
+    ed.focus();
+    renderHL();
+    wstore();
+  };
+  $('#keys').appendChild(b);
+});
+
+$('#run').onclick=run;
+$('#bClear').onclick=function(){ ed.value=''; clean(); ed.focus(); renderHL(); wstore(); };
+$('#bWk').onclick=function(){ drawWk(); $('#mask1').classList.add('on'); };
+$('#bEx').onclick=function(){ drawEx(); $('#mask2').classList.add('on'); };
+$('#bLib').onclick=function(){ drawLib(); $('#mask3').classList.add('on'); };
+$('#bSnip').onclick=function(){ drawSnip(); $('#mask4').classList.add('on'); };
+
+$$('.btheme').forEach(function(b){ b.onclick = toggleTheme; });
+
+$('#bBack').onclick=function(){
+  wstore();
+  renderHome();
+  show('v-home');
+};
+
+['mask1','mask2','mask3','mask4'].forEach(function(id){
+  var m=document.getElementById(id);
+  if(m) m.onclick=function(e){ if(e.target===m) closeAll(); };
+});
+
+$$('.tabs button').forEach(function(b){
+  b.onclick=function(){ tab(b.dataset.p); };
+});
+
+/* 输入 → 高亮（滚动用 rAF，高亮 130ms 防抖） */
+ed.addEventListener('scroll', syncScrollSoon, {passive:true});
+ed.addEventListener('compositionstart', function(){ composing = true; });
+ed.addEventListener('compositionend', function(){
+  composing = false;
+  renderHLSoon();
+});
+ed.addEventListener('input', function(){
+  if (!composing) renderHLSoon();
+  wstore();
+});
+
+var rt;
+window.addEventListener('resize', function(){
+  clearTimeout(rt);
+  rt=setTimeout(function(){
+    if($('#paneTurtle').classList.contains('on')) window._tg.init();
+    syncScroll();
+  }, 300);
+});
+
+/* =====================================================================
+   十九、启动
+   ===================================================================== */
+applyTheme();
+window._tg.init();
+renderHome();
+renderHL();
+boot();
+</script>
+</body>
+</html>
